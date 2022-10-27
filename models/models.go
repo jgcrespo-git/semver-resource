@@ -67,6 +67,7 @@ type Source struct {
 	SkipSSLVerification  bool   `json:"skip_ssl_verification"`
 	ServerSideEncryption string `json:"server_side_encryption"`
 	UseV2Signing         bool   `json:"use_v2_signing"`
+	RetriesOnError		 int	`json:"retries_on_error"`
 
 	URI           string `json:"uri"`
 	Branch        string `json:"branch"`

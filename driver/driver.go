@@ -21,6 +21,7 @@ type Driver interface {
 }
 
 const maxRetries = 12
+const retriesOnErrorWriteVersion = 3
 
 func FromSource(source models.Source) (Driver, error) {
 	var initialVersion semver.Version
@@ -88,18 +89,24 @@ func FromSource(source models.Source) (Driver, error) {
 		}, nil
 
 	case models.DriverGit:
+		var retriesOnError = retriesOnErrorWriteVersion
+		if source.RetriesOnError != 0 {			
+			retriesOnError = source.RetriesOnError
+		}
+		
 		return &GitDriver{
 			InitialVersion: initialVersion,
 
-			URI:                    source.URI,
-			Branch:                 source.Branch,
-			PrivateKey:             source.PrivateKey,
-			Username:               source.Username,
-			Password:               source.Password,
-			File:                   source.File,
-			GitUser:                source.GitUser,
-			CommitMessage:          source.CommitMessage,
-			SkipSSLVerification:    source.SkipSSLVerification,
+			URI:                    	source.URI,
+			Branch:                 	source.Branch,
+			PrivateKey:             	source.PrivateKey,
+			Username:               	source.Username,
+			Password:               	source.Password,
+			File:                   	source.File,
+			GitUser:                	source.GitUser,
+			CommitMessage:          	source.CommitMessage,
+			SkipSSLVerification:    	source.SkipSSLVerification,
+			RetriesOnErrorWriteVersion:	retriesOnError,
 		}, nil
 
 	case models.DriverSwift:

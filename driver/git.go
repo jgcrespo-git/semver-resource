@@ -19,7 +19,6 @@ var privateKeyPath string
 var netRcPath string
 
 var ErrEncryptedKey = errors.New("private keys with passphrases are not supported")
-var RetriesOnErrorWriteVersion = 3
 
 func init() {
 	gitRepoDir = filepath.Join(os.TempDir(), "semver-git-repo")
@@ -30,16 +29,17 @@ func init() {
 type GitDriver struct {
 	InitialVersion semver.Version
 
-	URI                 string
-	Branch              string
-	PrivateKey          string
-	Username            string
-	Password            string
-	File                string
-	GitUser             string
-	Depth               string
-	CommitMessage       string
-	SkipSSLVerification bool
+	URI                 		string
+	Branch              		string
+	PrivateKey          		string
+	Username            		string
+	Password            		string
+	File                		string
+	GitUser             		string
+	Depth               		string
+	CommitMessage       		string
+	SkipSSLVerification 		bool
+	RetriesOnErrorWriteVersion	int
 }
 
 func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
@@ -53,9 +53,9 @@ func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
 		return semver.Version{}, err
 	}
 
-	var newVersion semver.Version
+	var newVersion semver.Version	
 
-	for i := 1; i <= RetriesOnErrorWriteVersion; i++ {
+	for i := 1; i <= driver.RetriesOnErrorWriteVersion; i++ {
 		err = driver.setUpRepo()
 		if err != nil {
 			return semver.Version{}, err
@@ -93,9 +93,9 @@ func (driver *GitDriver) Set(newVersion semver.Version) error {
 	err = driver.setUserInfo()
 	if err != nil {
 		return err
-	}
-
-	for i := 1; i <= RetriesOnErrorWriteVersion; i++ {
+	}	
+	
+	for i := 1; i <= driver.RetriesOnErrorWriteVersion; i++ {
 		err = driver.setUpRepo()
 		if err != nil {
 			return err
@@ -374,9 +374,7 @@ func (driver *GitDriver) writeVersion(newVersion semver.Version) (bool, error) {
 
 	pushOutput, err := gitPush.CombinedOutput()
 
-	if strings.Contains(string(pushOutput), falsePushString) ||
-		strings.Contains(string(pushOutput), pushRejectedString) ||
-		strings.Contains(string(pushOutput), pushRemoteRejectedString) {
+	if strings.Contains(string(pushOutput), falsePushString) {
 		os.Stderr.Write(pushOutput)
 		return false, nil
 	}
