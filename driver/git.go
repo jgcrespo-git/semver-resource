@@ -56,6 +56,8 @@ func (driver *GitDriver) Bump(bump version.Bump) (semver.Version, error) {
 	var newVersion semver.Version	
 
 	for i := 1; i <= driver.RetriesOnErrorWriteVersion; i++ {
+		fmt.Fprintf(os.Stderr, "Attempts: %d/%d\n", i, driver.RetriesOnErrorWriteVersion)
+		
 		err = driver.setUpRepo()
 		if err != nil {
 			return semver.Version{}, err
@@ -96,19 +98,22 @@ func (driver *GitDriver) Set(newVersion semver.Version) error {
 	}	
 	
 	for i := 1; i <= driver.RetriesOnErrorWriteVersion; i++ {
+		fmt.Fprintf(os.Stderr, "Attempts: %d/%d\n", i, driver.RetriesOnErrorWriteVersion)
+		
 		err = driver.setUpRepo()
 		if err != nil {
 			return err
 		}
 
-		wrote, err := driver.writeVersion(newVersion)
-		if err != nil {
-			return err
-		}
-
+		wrote := false
+		wrote, err = driver.writeVersion(newVersion)
 		if wrote {
 			break
 		}
+	}
+	
+	if err != nil {
+		return err
 	}
 
 	return nil
