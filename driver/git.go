@@ -155,29 +155,34 @@ func (driver *GitDriver) setUpRepo() error {
 			gitClone.Args = append(gitClone.Args, "--depth", driver.Depth)
 		}
 		gitClone.Args = append(gitClone.Args, "--single-branch", gitRepoDir)
-		gitClone.Stdout = os.Stderr
-		gitClone.Stderr = os.Stderr
-		if err := gitClone.Run(); err != nil {
+		//gitClone.Stdout = os.Stderr
+		//gitClone.Stderr = os.Stderr
+		outClone, err := gitClone.CombinedOutput()
+		if err != nil {
 			return err
 		}
+		fmt.Fprintf(os.Stderr, "git clone output: %s\n", outClone)
 	} else {
 		gitFetch := exec.Command("git", "fetch", "origin", driver.Branch)
 		gitFetch.Dir = gitRepoDir
-		gitFetch.Stdout = os.Stderr
-		gitFetch.Stderr = os.Stderr
-		if err := gitFetch.Run(); err != nil {
+		//gitFetch.Stdout = os.Stderr
+		//gitFetch.Stderr = os.Stderr
+		outFetch, err := gitFetch.CombinedOutput()
+		if err != nil {
 			return err
-		}
+		}		
+		fmt.Fprintf(os.Stderr, "git fetch output: %s\n", outFetch)
 	}
 
 	gitCheckout := exec.Command("git", "reset", "--hard", "origin/"+driver.Branch)
 	gitCheckout.Dir = gitRepoDir
-	gitCheckout.Stdout = os.Stderr
-	gitCheckout.Stderr = os.Stderr
-	if err := gitCheckout.Run(); err != nil {
+	//gitCheckout.Stdout = os.Stderr
+	//gitCheckout.Stderr = os.Stderr
+	outReset, err := gitCheckout.CombinedOutput()
+	if err != nil {
 		return err
-	}
-
+	}	
+	fmt.Fprintf(os.Stderr, "git reset output: %s\n", outReset)
 	return nil
 }
 
